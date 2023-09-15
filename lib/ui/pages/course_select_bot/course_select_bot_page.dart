@@ -22,6 +22,12 @@ class _CourseSelectionPage extends State<CourseSelectionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("選課小幫手"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: startSelection,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -36,14 +42,15 @@ class _CourseSelectionPage extends State<CourseSelectionPage> {
                 return Padding(padding: const EdgeInsets.only(bottom: 8.0), child: Text(data));
               },
             ),
-            IconButton(onPressed: onPressed, icon: Icon(Icons.add_circle_outline))
+            IconButton(onPressed: addCourseCode, icon: Icon(Icons.add_circle_outline)),
           ],
         ),
       ),
     );
   }
 
-  void onPressed() {
+  void startSelection() {}
+  void addCourseCode() {
     showDialog(
       context: context,
       builder: (BuildContext context) {

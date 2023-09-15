@@ -14,6 +14,7 @@ import 'package:flutter_app/src/util/language_util.dart';
 import 'package:flutter_app/src/version/app_version.dart';
 import 'package:flutter_app/ui/other/my_toast.dart';
 import 'package:flutter_app/ui/pages/calendar/calendar_page.dart';
+import 'package:flutter_app/ui/pages/course_select_bot/course_select_bot_page.dart';
 import 'package:flutter_app/ui/pages/coursetable/course_table_page.dart';
 import 'package:flutter_app/ui/pages/notification/notification_page.dart';
 import 'package:flutter_app/ui/pages/other/other_page.dart';
@@ -80,6 +81,7 @@ class _MainScreenState extends State<MainScreen> with RouteAware {
       _pageList.add(const NotificationPage());
       _pageList.add(const CalendarPage());
       _pageList.add(const ScoreViewerPage());
+      _pageList.add(const CourseSelectionPage());
       _pageList.add(OtherPage(_pageController));
     });
   }
@@ -166,6 +168,12 @@ class _MainScreenState extends State<MainScreen> with RouteAware {
                 EvaIcons.bookOpenOutline,
               ),
               label: R.current.titleScore),
+          BottomNavigationBarItem(
+            icon: const Icon(
+              EvaIcons.flag,
+            ),
+            label: "選課",
+          ),
           BottomNavigationBarItem(
             icon: const Icon(
               EvaIcons.menu,
