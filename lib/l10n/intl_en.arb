@@ -256,5 +256,9 @@
   "androidPrivateBrowseGuideTitle": "About Incognito Browse",
   "androidPrivateBrowseGuideSubTitle": "Open Incognito browsing to enhanced security",
   "kClass": "class",
-  "kDepartment": "department"
+  "kDepartment": "department",
+  "name": "name",
+  "studentId": "student id",
+  "getCourseClassmateList": "Getting classmate list...",
+  "getCourseClassmateListError": "Get classmate list error"
 }
