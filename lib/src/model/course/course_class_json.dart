@@ -211,38 +211,37 @@ class SemesterJson {
 
 @JsonSerializable()
 class ClassmateJson {
-  String className; //電子一甲
-  String studentEnglishName;
+  String departmentName; //電子系
+  //String className; //電子一甲
+  // String studentEnglishName;
   String studentName;
   String studentId;
-  String href;
-  bool isSelect; //是否撤選
+  // String href;
+  // bool isSelect; //是否撤選
 
-  ClassmateJson({this.className, this.studentEnglishName, this.studentName, this.studentId, this.isSelect, this.href}) {
-    className = JsonInit.stringInit(className);
-    studentEnglishName = JsonInit.stringInit(studentEnglishName);
+  ClassmateJson({this.departmentName/*, this.className, this.studentEnglishName*/, this.studentName, this.studentId,/* this.isSelect, this.href*/}) {
+    departmentName = JsonInit.stringInit(departmentName);
+    // className = JsonInit.stringInit(className);
+    // studentEnglishName = JsonInit.stringInit(studentEnglishName);
     studentName = JsonInit.stringInit(studentName);
     studentId = JsonInit.stringInit(studentId);
-    href = JsonInit.stringInit(href);
-    isSelect = isSelect ?? false;
+    // href = JsonInit.stringInit(href);
+    // isSelect = isSelect ?? false;
   }
 
   bool get isEmpty {
-    return className.isEmpty && studentEnglishName.isEmpty && studentName.isEmpty && studentId.isEmpty && href.isEmpty;
+    return departmentName.isEmpty /*&& className.isEmpty && studentEnglishName.isEmpty*/ && studentName.isEmpty && studentId.isEmpty /*&& href.isEmpty*/;
   }
 
   @override
   String toString() {
     return sprintf(
-        "className           : %s \nstudentEnglishName  : %s \nstudentName         : %s \nstudentId           : %s \nhref                : %s \nisSelect            : %s \n",
-        [className, studentEnglishName, studentName, studentId, href, isSelect.toString()]);
+        "departmentName      : %s \nstudentName         : %s \nstudentId           : %s \n",
+        [departmentName/*, className, studentEnglishName*/, studentName, studentId/*, href, isSelect.toString()*/]);
   }
 
   String getName() {
     String name;
-    if (LanguageUtil.getLangIndex() == LangEnum.en) {
-      name = studentEnglishName;
-    }
     name = name ?? studentName;
     name = (name.contains(RegExp(r"\w"))) ? name : studentName;
     return name;

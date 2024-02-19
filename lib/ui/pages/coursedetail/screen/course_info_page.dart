@@ -4,10 +4,12 @@ import 'dart:async';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/model/course/course_class_json.dart';
 import 'package:flutter_app/src/model/course/course_main_extra_json.dart';
 import 'package:flutter_app/src/model/coursetable/course_table_json.dart';
 import 'package:flutter_app/src/r.dart';
 import 'package:flutter_app/src/task/course/course_extra_info_task.dart';
+import 'package:flutter_app/src/task/iplus/iplus_get_course_classmate_list_task.dart';
 import 'package:flutter_app/src/task/task_flow.dart';
 import 'package:flutter_app/ui/other/route_utils.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -61,11 +63,13 @@ class _CourseInfoPageState extends State<CourseInfoPage> with AutomaticKeepAlive
     courseMainInfo = widget.courseInfo.main;
     final courseId = courseMainInfo.course.id;
     final taskFlow = TaskFlow();
-    final task = CourseExtraInfoTask(courseId);
-    taskFlow.addTask(task);
+    
+    final extraInfoTask = CourseExtraInfoTask(courseId);
+    taskFlow.addTask(extraInfoTask);
     if (await taskFlow.start()) {
-      courseExtraInfo = task.result;
+      courseExtraInfo = extraInfoTask.result;
     }
+    
     widget.courseInfo.extra = courseExtraInfo;
     courseData.add(_buildCourseInfo(sprintf("%s: %s", [R.current.courseId, courseMainInfo.course.id])));
     courseData.add(_buildCourseInfo(sprintf("%s: %s", [R.current.courseName, courseMainInfo.course.name])));
@@ -89,6 +93,31 @@ class _CourseInfoPageState extends State<CourseInfoPage> with AutomaticKeepAlive
     listItem.removeRange(0, listItem.length);
     listItem.add(_buildInfoTitle(R.current.courseData));
     listItem.addAll(courseData);
+
+    final classmateTask = IPlusCourseClassmateList(courseId);
+    taskFlow.addTask(classmateTask);
+    if(await taskFlow.start()) {
+      courseExtraInfo.classmate = classmateTask.result;
+    }
+
+    if(courseExtraInfo.classmate.isNotEmpty) {
+      listItem.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+          child: _buildClassmateInfo(1, R.current.kDepartment, R.current.studentId, R.current.name, isHeader: true),
+        ),
+      );
+
+      for (int i = 0; i < courseExtraInfo.classmate.length; i++) {
+        ClassmateJson classmate = widget.courseInfo.extra.classmate[i];
+        listItem.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+            child: _buildClassmateInfo(i, classmate.departmentName, classmate.studentId, classmate.getName()),
+          ),
+        );
+      }
+    }
 
     isLoading = false;
     setState(() {});
@@ -258,6 +287,47 @@ class _CourseInfoPageState extends State<CourseInfoPage> with AutomaticKeepAlive
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: classroomItemList,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassmateInfo(int index, String departmentName, String studentId, String studentName, { bool isHeader = false }) {
+    double height = isHeader ? 25 : 50;
+
+    final color = (index % 2 == 1)
+      ? Theme.of(context).colorScheme.surface
+      : Theme.of(context).colorScheme.surfaceVariant.withAlpha(widget.courseInfoWithAlpha);
+    return Container(
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          SizedBox(width: 4, height: height),
+          Expanded(
+            child: Text(
+              departmentName,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(width: 4, height: height),
+          Expanded(
+            child: Text(
+              studentId,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(width: 4, height: height),
+          Expanded(
+            child: Text(
+              studentName,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
