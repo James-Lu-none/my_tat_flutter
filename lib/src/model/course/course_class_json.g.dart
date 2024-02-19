@@ -151,20 +151,23 @@ Map<String, dynamic> _$SemesterJsonToJson(SemesterJson instance) => <String, dyn
 
 ClassmateJson _$ClassmateJsonFromJson(Map<String, dynamic> json) {
   return ClassmateJson(
-    className: json['className'] as String,
-    studentEnglishName: json['studentEnglishName'] as String,
+    departmentName: json['departmentName'] as String,
+    // className: json['className'] as String,
+    // studentEnglishName: json['studentEnglishName'] as String,
     studentName: json['studentName'] as String,
     studentId: json['studentId'] as String,
-    isSelect: json['isSelect'] as bool,
-    href: json['href'] as String,
+    // isSelect: json['isSelect'] as bool,
+    // href: json['href'] as String,
   );
 }
 
+
 Map<String, dynamic> _$ClassmateJsonToJson(ClassmateJson instance) => <String, dynamic>{
-      'className': instance.className,
-      'studentEnglishName': instance.studentEnglishName,
+      'departmentName': instance.departmentName,
+      // 'className': instance.className,
+      // 'studentEnglishName': instance.studentEnglishName,
       'studentName': instance.studentName,
       'studentId': instance.studentId,
-      'href': instance.href,
-      'isSelect': instance.isSelect,
+      // 'href': instance.href,
+      // 'isSelect': instance.isSelect,
     };

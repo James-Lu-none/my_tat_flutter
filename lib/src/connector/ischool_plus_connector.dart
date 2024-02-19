@@ -7,14 +7,16 @@ import 'package:dio/dio.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_app/debug/log/log.dart';
 import 'package:flutter_app/src/connector/core/connector.dart';
+import 'package:flutter_app/src/model/course/classmate_department_dict.dart';
+import 'package:flutter_app/src/model/course/course_class_json.dart';
 import 'package:flutter_app/src/model/ischoolplus/course_file_json.dart';
 import 'package:flutter_app/src/model/ischoolplus/ischool_plus_announcement_json.dart';
 import 'package:flutter_app/src/util/html_utils.dart';
 import 'package:html/dom.dart' as html;
 import 'package:html/parser.dart' as html;
 
-import 'core/connector_parameter.dart';
-import 'ntut_connector.dart';
+import 'package:flutter_app/src/connector/core/connector_parameter.dart';
+import 'package:flutter_app/src/connector/ntut_connector.dart';
 
 enum ISchoolPlusConnectorStatus { loginSuccess, loginFail, unknownError }
 
@@ -33,6 +35,8 @@ class ISchoolPlusConnector {
   //static final String _iSchoolPlusIndexUrl = _iSchoolPlusUrl + "mooc/index.php";
   static const String _getCourseName = "${_iSchoolPlusUrl}learn/mooc_sysbar.php";
   static const _ssoLoginUrl = "${NTUTConnector.host}ssoIndex.do";
+
+  static const String _getClassmateList = "${_iSchoolPlusUrl}learn/learn_ranking.php";
 
   /// The Authorization Step of ISchool (2023-10-21)
   /// 1. GET https://app.ntut.edu.tw/ssoIndex.do
@@ -468,6 +472,55 @@ class ISchoolPlusConnector {
       return !title.contains("取消");
     } catch (e) {
       return false;
+    }
+  }
+
+  static Future<List<ClassmateJson>> getCourseClassmateList(String courseId) async {
+    ConnectorParameter parameter;
+    html.Document tagNode;
+    html.Element node;
+    html.Element table;
+    List<html.Element> nodes;
+    String response;
+    List<ClassmateJson> result = [];
+
+    try {
+      if (!await _selectCourse(courseId)) {
+        return null;
+      }
+      parameter = ConnectorParameter(_getClassmateList);
+      response = await Connector.getDataByGet(parameter);
+      tagNode = html.parse(response);
+      table = tagNode.querySelectorAll('table')[1];
+      nodes = table.querySelectorAll('tr');
+
+      for(int i = 0 ; i < nodes.length ; i++) {
+        node = nodes[i].querySelectorAll('td')[1];
+
+        String information = node.querySelector('div').innerHtml;
+        int splitIndex = information.indexOf(' ');
+
+        String studentId = information.substring(0, splitIndex);
+        String studentName = information.substring(splitIndex + 2, information.length-1);
+
+        if(studentId == 'istudyoaa') continue; //過濾掉校務人士 如有多身分考慮枚舉或過濾Email
+
+        final departmentName = ClassmateDepartmantDict.getName(studentId);
+
+        ClassmateJson student = ClassmateJson(
+          departmentName: departmentName,
+          studentName: studentName, 
+          studentId: studentId
+        );
+        result.add(student);
+      }
+
+      result.sort((a, b) => a.studentId.compareTo(b.studentId));
+
+      return result.isNotEmpty ? result : null;
+    } catch (e, stack) {
+      Log.eWithStack(e, stack);
+      return null;
     }
   }
 
