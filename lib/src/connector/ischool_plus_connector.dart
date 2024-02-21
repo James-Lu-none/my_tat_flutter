@@ -19,7 +19,13 @@ import 'package:html/parser.dart' as html;
 import 'package:flutter_app/src/connector/core/connector_parameter.dart';
 import 'package:flutter_app/src/connector/ntut_connector.dart';
 
-enum ISchoolPlusConnectorStatus { loginSuccess, loginFail, loginGetSSOIndexFail, loginRedirectionFail,login, unknownError }
+enum ISchoolPlusConnectorStatus {
+  loginSuccess,
+  loginFail,
+  loginGetSSOIndexFail,
+  loginRedirectionFail,
+  unknownError
+}
 
 enum IPlusReturnStatus { success, fail, noPermission }
 
@@ -41,8 +47,8 @@ class ISchoolPlusConnector {
 
   /// The Authorization Step of ISchool (2023-10-21)
   /// 1. GET https://app.ntut.edu.tw/ssoIndex.do
-  /// 2_1. POST https://app.ntut.edu.tw/oauth2Server.do (It should be. See the comment on step 2)
-  /// 2_2. follow the redirection to https://istudy.ntut.edu.tw/login2.php (It should be. See the comment on step 2)
+  /// 2_1. POST https://app.ntut.edu.tw/oauth2Server.do (It should be. See the comment on step 2_1)
+  /// 2_2. follow the redirection to https://istudy.ntut.edu.tw/login2.php (It should be. See the comment on step 2_2)
   static Future<ISchoolPlusConnectorStatus> login(String account, {bool logEventToFirebase = true}) async {
     try {
       final ssoIndexResponse = await getSSOIndexResponse();
@@ -59,13 +65,10 @@ class ISchoolPlusConnector {
         oauthData[name] = value;
       }
 
-      // Step 2
-      // The ssoIndexJumpUrl should be "oauth2Server.do".
-      // If not, it means that the school server has changed.
-      // The response status code to this request should result in
-      // "302" (the page has moved to a new location), which triggers automatic redirection
-      // feature included in dio connector, thus no further actions needed.
       for (int retry = 0; retry < 3; retry++) {
+        // Step 2_1
+        // The ssoIndexJumpUrl should be "oauth2Server.do", and the response should contain redirection location.
+        // If not, a retry of getting redirection location will perform.
         final jumpParameter = ConnectorParameter("${NTUTConnector.host}$ssoIndexJumpUrl");
         jumpParameter.data = oauthData;
         final jumpResult = (await Connector.getDataByPostResponse(jumpParameter));
@@ -74,6 +77,9 @@ class ISchoolPlusConnector {
           await Future.delayed(const Duration(milliseconds: 100));
           continue;
         }
+        // Step 2_2
+        // The redirect location should be "https://istudy.ntut.edu.tw/login2.php", and the response should not contain
+        // "connection `lost`", if it does, a retry of getting redirection location will perform.
         final login2Parameter = ConnectorParameter(jumpResult.headers['location'][0]);
         final login2Result = await Connector.getDataByGet(login2Parameter);
         if (login2Result.contains("lost")) {
@@ -488,24 +494,21 @@ class ISchoolPlusConnector {
       table = tagNode.querySelectorAll('table')[1];
       nodes = table.querySelectorAll('tr');
 
-      for(int i = 0 ; i < nodes.length ; i++) {
+      for (int i = 0; i < nodes.length; i++) {
         node = nodes[i].querySelectorAll('td')[1];
 
         String information = node.querySelector('div').innerHtml;
         int splitIndex = information.indexOf(' ');
 
         String studentId = information.substring(0, splitIndex);
-        String studentName = information.substring(splitIndex + 2, information.length-1);
+        String studentName = information.substring(splitIndex + 2, information.length - 1);
 
-        if(studentId == 'istudyoaa') continue; //過濾掉校務人士 如有多身分考慮枚舉或過濾Email
+        if (studentId == 'istudyoaa') continue; //過濾掉校務人士 如有多身分考慮枚舉或過濾Email
 
         final departmentName = ClassmateDepartmantDict.getName(studentId);
 
-        ClassmateJson student = ClassmateJson(
-          departmentName: departmentName,
-          studentName: studentName, 
-          studentId: studentId
-        );
+        ClassmateJson student =
+            ClassmateJson(departmentName: departmentName, studentName: studentName, studentId: studentId);
         result.add(student);
       }
 
